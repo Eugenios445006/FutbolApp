@@ -1,0 +1,6 @@
+Programs/*.exe  
+Programs/*.dll  
+IdeSrc/  
+*.tag  
+*.pht  
+*.dep 
