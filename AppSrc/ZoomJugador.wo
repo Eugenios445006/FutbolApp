@@ -1,12 +1,17 @@
 ﻿// C:\DataFlex Projects\FutbolApp\AppSrc\ZoomJugador.wo
 // Jugador
-//
 
 Use cWebView.pkg
 Use cWebPanel.pkg
 Use cWebMenuGroup.pkg
 Use cWebMenuItem.pkg
 Use cWebForm.pkg
+Use cWebGroup.pkg 
+Use SelectPosicion.wo
+Use SelectLiga.wo
+Use SelectEquipo.wo
+
+
 
 Use cligaDataDictionary.dd
 Use cequipoDataDictionary.dd
@@ -14,10 +19,11 @@ Use cjugadorDataDictionary.dd
 
 Object oZoomJugador is a cWebView
     Set piColumnCount to 12
-    Set psCaption to "Jugador"
+    Set psCaption to "Datos del Jugador"
     Set peWebViewStyle to wvsDrilldown
     Set peViewType to vtZoom
-    Set pbShowCaption to False
+    
+    Set pbShowCaption to True
     Set Verify_Save_Msg to 0
     Set piMaxWidth to 1024
 
@@ -35,99 +41,140 @@ Object oZoomJugador is a cWebView
     Set Main_DD to ojugador_DD
     Set Server  to ojugador_DD
 
-
     Object oWebMainPanel is a cWebPanel
-        Set piColumnCount to 12
-        WebSetResponsive piColumnCount rmMobile to 4
+        
+        // --- GRUPO 1: DATOS PERSONALES ---
+        Object oDatosPersonalesGroup is a cWebGroup
+            Set psCaption to "Información Personal"
+            Set piColumnSpan to 12
+            Set piColumnCount to 12
 
-        Object ojugadorNombre is a cWebForm
-            Entry_Item jugador.Nombre
+            Object ojugadorNombre is a cWebForm
+                Entry_Item jugador.Nombre
+                Set piColumnSpan to 6
+                Set piColumnIndex to 0
+                Set peLabelPosition to lpTop
+                Set psLabel to "Nombre"
+            End_Object 
+
+            Object ojugadorApellido is a cWebForm
+                Entry_Item jugador.Apellido
+                Set piColumnSpan to 6
+                Set piColumnIndex to 6
+                Set peLabelPosition to lpTop
+                Set psLabel to "Apellido"
+            End_Object 
+
+            Object ojugadorNacionalidad is a cWebForm
+                Entry_Item jugador.Nacionalidad
+                Set piColumnSpan to 12
+                Set piColumnIndex to 0
+                Set peLabelPosition to lpTop
+                Set psLabel to "Nacionalidad"
+            End_Object 
+            End_Object
+            
+            // --- GRUPO 2: CLUB Y COMPETICIÓN
+            Object oClubLigaGroup is a cWebGroup
+             Set psCaption to "Club y Competición"
+             Set piColumnSpan to 12
+                Set piColumnCount to 12
+                
+            Object oequipoNombre is a cWebForm
+                Entry_Item equipo.Nombre
+                Set piColumnSpan to 6
+                Set piColumnIndex to 0
+                Set peLabelPosition to lpTop
+                Set psLabel to "Equipo Actual"
+                Set pbPromptButton to True
+
+                // REPARADO: Se registra la ruta de selección de equipos para quitar el error interno
+                WebRegisterPath ntNavigateForward oSelectEquipo
+
+                Procedure OnPrompt
+                    tWebNavigateData NavigateData
+                    Get GetNavigateData to NavigateData
+                    Move nfFromChild to NavigateData.eNavigateType
+                    Send NavigatePath of oSelectEquipo Self NavigateData
+                End_Procedure
+            End_Object 
+
+            Object oligaNombre is a cWebForm
+                Entry_Item liga.Nombre
+                Set piColumnSpan to 6
+                Set piColumnIndex to 6
+                Set peLabelPosition to lpTop
+                Set psLabel to "Liga"
+                Set pbPromptButton to True
+
+                // REPARADO: Se registra la ruta de selección de ligas
+                WebRegisterPath ntNavigateForward oSelectLiga
+
+                Procedure OnPrompt
+                   tWebNavigateData NavigateData
+                   Get GetNavigateData to NavigateData
+                   Move nfFromChild to NavigateData.eNavigateType
+                   Send NavigatePath of oSelectLiga Self NavigateData
+                End_Procedure
+            End_Object 
+
+            Object oligaPais is a cWebForm
+                Entry_Item liga.Pais
+                Set piColumnSpan to 12
+                Set piColumnIndex to 0
+                Set peLabelPosition to lpTop
+                Set psLabel to "Pais"
+                Set pbPromptButton to True
+
+                // REPARADO: Se registra la ruta de selección de ligas para el país
+                WebRegisterPath ntNavigateForward oSelectLiga
+
+                Procedure OnPrompt
+                  tWebNavigateData NavigateData
+                  Get NavigateData to NavigateData
+                  Move nfFromChild to NavigateData.eNavigateType
+    Send NavigatePath of oSelectLiga Self NavigateData
+                End_Procedure
+            End_Object 
+
+            /*Object oligaEquipos is a cWebForm
+                Entry_Item liga.Equipos
+                Set piColumnSpan to 2
+                Set piColumnIndex to 0
+                Set peLabelPosition to lpTop
+                Set psLabel to "Equipos"
+            End_Object */
+
+            /*Object oligaEquiposMax is a cWebForm
+                Entry_Item liga.EquiposMax
+                Set piColumnSpan to 2
+                Set piColumnIndex to 0
+                Set peLabelPosition to lpTop
+                Set psLabel to "EquiposMax"
+            End_Object */
+            End_Object 
+            // --- TU NUEVO BOTÓN: EJEMPLO DE NAVEGACIÓN UNDEFINED ---
+        Object oBtnVerPosiciones is a cWebButton
+            Set psCaption to "Ver Configuración de Posiciones"
             Set piColumnSpan to 12
             Set piColumnIndex to 0
-            Set peLabelPosition to lpTop
-            Set psLabel to "Nombre"
-        End_Object 
+            
+            // Registramos el camino hacia las posiciones
+            WebRegisterPath ntNavigateForward oSelectPosicion
 
-        Object ojugadorApellido is a cWebForm
-            Entry_Item jugador.Apellido
-            Set piColumnSpan to 12
-            Set piColumnIndex to 0
-            Set peLabelPosition to lpTop
-            Set psLabel to "Apellido"
-        End_Object 
-
-        Object ojugadorNacionalidad is a cWebForm
-            Entry_Item jugador.Nacionalidad
-            Set piColumnSpan to 10
-            Set piColumnIndex to 0
-            Set peLabelPosition to lpTop
-            Set psLabel to "Nacionalidad"
-        End_Object 
-
-        Object oligaNombre is a cWebForm
-            Entry_Item liga.Nombre
-            Set piColumnSpan to 12
-            Set piColumnIndex to 0
-            Set peLabelPosition to lpTop
-            Set psLabel to "Nombre"
-            Set pbPromptButton to True
-
-// ToDo: Fill in the from-child parent Select view object name for navigate forward
-//            WebRegisterPath ntNavigateForward oSelectView
-
-            Procedure OnPrompt
-                Send NavigatePath
+            Procedure OnClick
+               Send NavigatePath
             End_Procedure
-        End_Object 
-
-        Object oligaPais is a cWebForm
-            Entry_Item liga.Pais
-            Set piColumnSpan to 10
-            Set piColumnIndex to 0
-            Set peLabelPosition to lpTop
-            Set psLabel to "Pais"
-            Set pbPromptButton to True
-
-// ToDo: Fill in the from-child parent Select view object name for navigate forward
-//            WebRegisterPath ntNavigateForward oSelectView
-
-            Procedure OnPrompt
-                Send NavigatePath
+            
+            Procedure OnGetNavigateForwardData tWebNavigateData ByRef NavigateData Handle hoToView
+                Move nfUndefined to NavigateData.eNavigateType
             End_Procedure
-        End_Object 
-
-        Object oligaEquipos is a cWebForm
-            Entry_Item liga.Equipos
-            Set piColumnSpan to 2
-            Set piColumnIndex to 0
-            Set peLabelPosition to lpTop
-            Set psLabel to "Equipos"
-        End_Object 
-
-        Object oligaEquiposMax is a cWebForm
-            Entry_Item liga.EquiposMax
-            Set piColumnSpan to 2
-            Set piColumnIndex to 0
-            Set peLabelPosition to lpTop
-            Set psLabel to "EquiposMax"
-        End_Object 
-
-        Object oequipoNombre is a cWebForm
-            Entry_Item equipo.Nombre
-            Set piColumnSpan to 12
-            Set piColumnIndex to 0
-            Set peLabelPosition to lpTop
-            Set psLabel to "Nombre"
-            Set pbPromptButton to True
-
-// ToDo: Fill in the from-child parent Select view object name for navigate forward
-//            WebRegisterPath ntNavigateForward oSelectView
-
-            Procedure OnPrompt
-                Send NavigatePath
-            End_Procedure
-        End_Object 
+            
+        End_Object
+            
     End_Object 
+    
+    
 
     Object oActionGroup is a cWebMenuGroup
 
@@ -138,7 +185,6 @@ Object oZoomJugador is a cWebView
             Procedure OnClick
                 Send Request_Save
             End_Procedure
-
         End_Object 
 
         Object oEditBtn is a cWebMenuItem
@@ -148,7 +194,6 @@ Object oZoomJugador is a cWebView
                 Send ChangeEditMode True
                 Send SetActionButtons
             End_Procedure
-
         End_Object 
 
         Object oDeleteBtn is a cWebMenuItem
@@ -159,7 +204,6 @@ Object oZoomJugador is a cWebView
             Procedure OnClick
                 Send Request_Delete
             End_Procedure
-
         End_Object 
 
         Object oCancelChangesBtn is a cWebMenuItem
@@ -169,7 +213,6 @@ Object oZoomJugador is a cWebView
             Procedure OnClick
                 Send RefreshRecord
             End_Procedure
-
         End_Object 
     End_Object 
 
@@ -182,7 +225,6 @@ Object oZoomJugador is a cWebView
         Get GetNavigateData to NavigateData
         Get HasRecord of hoDD to bHasRecord
 
-        // let's hide all buttons and then Show the ones we want
         WebSet pbRender of oEditBtn to False
         WebSet pbRender of oSaveBtn to False
         WebSet pbRender of oCancelChangesBtn to False
@@ -199,11 +241,9 @@ Object oZoomJugador is a cWebView
     End_Procedure
 
     Procedure OnViewSaved Handle hoServer Boolean bChanged
-        // Close after save
         Send NavigateClose Self
     End_Procedure
 
-    // this will close the view after a delete
     Procedure OnViewDeleted Handle hoDDO
         Send NavigateClose Self
     End_Procedure
@@ -211,23 +251,18 @@ Object oZoomJugador is a cWebView
     Procedure OnNavigateForward tWebNavigateData NavigateData Integer hoInvokingView Integer hoInvokingObject
         Case Begin
             Case (NavigateData.eNavigateType = nfFromMain)
-                // If from main, this is a propbably a main file Select to Zoom.
                 Case Break
-
             Case (NavigateData.eNavigateType = nfFromParent)
-                // If from parent, this is a constrained drill down.
                 Case Break
-
             Case (NavigateData.eNavigateType = nfFromChild)
-                // If from child, this is a probably a parent Zoom from a Zoom.
+               
                 Case Break
-
-            Case Else // must be nfUndefined
-
+            Case Else
+            Set pbEnabled of ojugadorNombre to True
+            Case Break
         Case End
 
         Send SetActionButtons
-
     End_Procedure
 
-End_Object 
+End_Object

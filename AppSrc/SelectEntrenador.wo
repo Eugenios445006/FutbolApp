@@ -27,15 +27,15 @@ Object oSelectEntrenador is a cWebView
     End_Object 
 
     Object oequipo_DD is a cequipoDataDictionary
-        Set DDO_Server To oliga_DD
+        Set DDO_Server to oliga_DD
     End_Object 
 
     Object oentrenador_DD is a centrenadorDataDictionary
-        Set DDO_Server To oequipo_DD
+        Set DDO_Server to oequipo_DD
     End_Object 
 
-    Set Main_DD To oentrenador_DD
-    Set Server  To oentrenador_DD
+    Set Main_DD to oentrenador_DD
+    Set Server  to oentrenador_DD
 
 
     Object oList is a cWebList
@@ -43,42 +43,42 @@ Object oSelectEntrenador is a cWebView
         Set psCSSClass to "MobileList"
         Set pbServerOnRowClick to True
         Set pbFillHeight to True
-        Set pbShowHeader to False
+        Set pbShowHeader to True
         Set piSortColumn to 0
         
         WebRegisterPath ntNavigateForward oZoomEntrenador
 
         Object oentrenadorNombre is a cWebColumn
             Entry_Item entrenador.Nombre
-            Set psCaption to "entrenador.Nombre"
+            Set psCaption to "Nombre"
             Set piWidth to 745
         End_Object 
 
         Object oentrenadorApellido is a cWebColumn
             Entry_Item entrenador.Apellido
-            Set psCaption to "entrenador.Apellido"
+            Set psCaption to "Apellido"
             Set piWidth to 745
         End_Object 
 
         Object oentrenadorNacionalidad is a cWebColumn
             Entry_Item entrenador.Nacionalidad
-            Set psCaption to "entrenador.Nacionalidad"
+            Set psCaption to "Nacionalidad"
             Set piWidth to 621
         End_Object 
 
         Object oligaNombre is a cWebColumn
             Entry_Item liga.Nombre
-            Set psCaption to "liga.Nombre"
+            Set psCaption to "liga"
             Set piWidth to 1243
         End_Object 
 
         Object oligaPais is a cWebColumn
             Entry_Item liga.Pais
-            Set psCaption to "liga.Pais"
+            Set psCaption to "Pais"
             Set piWidth to 621
         End_Object 
 
-        Object oligaEquipos is a cWebColumn
+        /*Object oligaEquipos is a cWebColumn
             Entry_Item liga.Equipos
             Set psCaption to "liga.Equipos"
             Set piWidth to 124
@@ -88,16 +88,16 @@ Object oSelectEntrenador is a cWebView
             Entry_Item liga.EquiposMax
             Set psCaption to "liga.EquiposMax"
             Set piWidth to 124
-        End_Object 
+        End_Object */
 
         Object oequipoNombre is a cWebColumn
             Entry_Item equipo.Nombre
-            Set psCaption to "equipo.Nombre"
+            Set psCaption to "Equipo"
             Set piWidth to 1491
         End_Object 
 
         Object oDetailButton is a cWebColumnButton
-            Set psCaption to "btn"
+            Set psCaption to ""
             Set piWidth to 45
             Set pbFixedWidth to True
             Set pbResizable to False
