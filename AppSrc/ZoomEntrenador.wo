@@ -106,7 +106,7 @@ Object oZoomEntrenador is a cWebView
             Set piColumnIndex to 6
             Set peLabelPosition to lpTop
             Set psLabel to "Liga"
-            Set pbPromptButton to True
+            Set pbPromptButton to False
 
 // ToDo: Fill in the from-child parent Select view object name for navigate forward
            WebRegisterPath ntNavigateForward oSelectLiga

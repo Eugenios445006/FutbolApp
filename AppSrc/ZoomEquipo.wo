@@ -9,14 +9,14 @@ Use cWebMenuItem.pkg
 Use cWebForm.pkg
 Use cWebGroup.pkg
 Use cWebButton.pkg
-
-Use SelectEntrenador.wo
-
-// Si tienes una vista de selección para la plantilla (jugadores), descoméntala:
-// Use SelectJugador.wo 
+// --- LIBRERÍAS PARA LAS LISTAS ---
+Use cWebList.pkg
+Use cWebColumn.pkg
 
 Use cligaDataDictionary.dd
 Use cequipoDataDictionary.dd
+Use centrenadorDataDictionary.dd
+Use cjugadorDataDictionary.dd
 
 Object oZoomEquipo is a cWebView
     Set piColumnCount to 12
@@ -28,12 +28,32 @@ Object oZoomEquipo is a cWebView
     Set Verify_Save_Msg to 0
     Set piMaxWidth to 1024
 
+    // Registros obligatorios para calmar al compilador de arriba a abajo
+    Register_Object oListaEntrenador
+    Register_Object oListaJugadores
+    WebRegisterPath ntNavigateForward oSelectLiga
+
     Object oliga_DD is a cligaDataDictionary
+        
     End_Object 
 
     Object oequipo_DD is a cequipoDataDictionary
         Set DDO_Server to oliga_DD
+       
     End_Object 
+
+    Object oentrenador_DD is a centrenadorDataDictionary
+        Set DDO_Server to oequipo_DD
+        Set Constrain_File to equipo.File_Number
+    End_Object
+
+    // CORRECCIÓN AQUÍ: Aseguramos que el DD de jugador esté perfectamente enganchado al de equipo
+    Object ojugador_DD is a cjugadorDataDictionary
+        Set DDO_Server to oequipo_DD
+        Set Ordering to 1
+        
+        Set Constrain_File to equipo.File_Number
+    End_Object
 
     Set Main_DD to oequipo_DD
     Set Server  to oequipo_DD
@@ -60,6 +80,13 @@ Object oZoomEquipo is a cWebView
                 Set piColumnSpan to 12
                 Set peLabelPosition to lpTop
                 Set psLabel to "Liga"
+                Set pbPromptButton to True
+                WebRegisterPath ntNavigateForward oSelectLiga
+                
+                Procedure OnPrompt
+                    Send NavigatePath
+                End_Procedure
+                
             End_Object 
 
             Object oligaPais is a cWebForm
@@ -70,45 +97,60 @@ Object oZoomEquipo is a cWebView
             End_Object 
         End_Object
 
-        // --- BOTONES INFERIORES DE NAVEGACIÓN (Entrenador / Plantilla) ---
-        Object oBtnVerEntrenador is a cWebButton
+        // --- LISTA 1: ENTRENADOR ---
+        Object oEntrenadorGroup is a cWebGroup
             Set psCaption to "Entrenador"
             Set piColumnSpan to 6
             Set piColumnIndex to 0
-            
-            // Registramos el camino hacia adelante por si entramos desde el menú de equipos
-            WebRegisterPath ntNavigateForward oSelectEntrenador
+            Set piColumnCount to 12
 
-            Procedure OnClick
-                tWebNavigateData NavigateData
-                // Leemos cómo hemos llegado a esta pantalla de Equipos
-                Get GetNavigateData to NavigateData
-                
-                // ¡EL ARREGLO!: Si en las migas de pan ya veníamos de atrás (de Entrenador)
-                // el tipo de navegación del historial será nfFromChild. Cerramos para volver.
-                If (NavigateData.eNavigateType = nfFromChild) Begin
-                    Send NavigateClose Self
-                End
-                // Si entramos limpios desde el menú, entonces sí avanzamos hacia el Select
-                Else Begin
-                    Send NavigatePath
-                End
-            End_Procedure
-        End_Object 
+            Object oListaEntrenador is a cWebList
+                Set Server to oentrenador_DD
+                Set pbServerOnRowClick to False
+                Set pbFillHeight to False
+                Set piHeight to 250
 
-        Object oBtnVerPlantilla is a cWebButton
+               Object oentrenadorNombre is a cWebColumn
+                    Set psCaption to "Nombre Completo"
+                    Set piWidth to 100
+                    
+                    // Concatenamos el nombre y el apellido en cada fila
+                    Procedure OnSetCalculatedValue String ByRef sValue
+                        Forward Send OnSetCalculatedValue (&sValue)
+                        // Junta de forma limpia: Nombre + Espacio + Apellido
+                        Move (Trim(entrenador.Nombre) + " " + Trim(entrenador.Apellido)) to sValue
+                    End_Procedure
+                End_Object
+            End_Object
+       End_Object
+
+        // --- LISTA 2: PLANTILLA (JUGADORES) ---
+        Object oPlantillaGroup is a cWebGroup
             Set psCaption to "Plantilla"
             Set piColumnSpan to 6
             Set piColumnIndex to 6
-            
-            // Aquí iría el registro hacia tu Select de jugadores si lo necesitas:
-             WebRegisterPath ntNavigateForward oSelectJugador
+            Set piColumnCount to 12
 
-            Procedure OnClick
-                // Lógica homóloga para la plantilla de jugadores si fuera necesario
-                Send NavigatePath
-            End_Procedure
-        End_Object 
+            Object oListaJugadores is a cWebList
+                Set Server to ojugador_DD
+                Set pbServerOnRowClick to False
+                Set pbFillHeight to False
+                Set piHeight to 250
+
+                Object ojugadorNombre is a cWebColumn
+                    Set psCaption to "Nombre Completo"
+                    Set piWidth to 100
+                    
+                    // Concatenamos el nombre y el apellido por código
+                    Procedure OnSetCalculatedValue String ByRef sValue
+                        Forward Send OnSetCalculatedValue (&sValue)
+                        // Junta: Nombre + " " + Apellido
+                        Move (Trim(jugador.Nombre) + " " + Trim(jugador.Apellido)) to sValue
+                    End_Procedure
+                End_Object
+            End_Object
+          End_Object
+
     End_Object
 
     Object oActionGroup is a cWebMenuGroup
@@ -125,6 +167,7 @@ Object oZoomEquipo is a cWebView
         Object oEditBtn is a cWebMenuItem
             Set psCSSClass to "WebEditMenuItem"
             Set psCaption to "Edit"
+            Set peActionDisplay to adActionBar
             Procedure OnClick
                 Send ChangeEditMode True
                 Send SetActionButtons
@@ -183,7 +226,21 @@ Object oZoomEquipo is a cWebView
         Send NavigateClose Self
     End_Procedure
 
+    // --- REFRESCAMOS LAS LISTAS AL FINAL ---
     Procedure OnNavigateForward tWebNavigateData NavigateData Handle hoInvokingView Handle hoInvokingObject
+        Case Begin
+            Case (NavigateData.eNavigateType = nfFromMain)
+                Case Break
+
+            Case (NavigateData.eNavigateType = nfFromParent)
+                Case Break
+
+            Case (NavigateData.eNavigateType = nfFromChild)
+                Case Break
+
+            Case Else 
+        Case End
+
         Send SetActionButtons
     End_Procedure
 

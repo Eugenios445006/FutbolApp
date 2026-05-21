@@ -80,39 +80,36 @@ Object oSelectEquipo is a cWebView
 
         End_Object 
 
-        // CORREGIDO: Lógica inteligente para diferenciar lupa vs menú principal
+        // REPARADO: Se cierra el bloque Case de forma estricta con End_Procedure
         Procedure OnRowClick String sRowId
             tWebNavigateData NavigateData
             Get GetNavigateData to NavigateData
 
             Case Begin
-                // 1. Si venimos de un Padre (ej. ver equipos de una Liga), vamos al Zoom del equipo
                 Case (NavigateData.eNavigateType = nfFromParent)
                     Send NavigateForward of oZoomEquipo Self
                     Case Break
 
-                // 2. Si venimos de una Lupa relacional inversa (Child Lookup)
                 Case (NavigateData.eNavigateType = nfFromChild)
                     Send NavigateClose Self
                     Case Break
 
-                // 3. ¡EL GANADOR!: Si venimos de la lupa de un Zoom principal (como ZoomEntrenador)
-                // Cerramos la selección para volcar el equipo elegido en la ficha del entrenador
                 Case (NavigateData.eNavigateType = nfFromMain)
                     Send NavigateClose Self
                     Case Break
 
-                // 4. Si entramos limpios desde el menú lateral de Equipos
                 Case Else 
                     Send NavigateForward of oZoomEquipo Self
                     Case Break
             Case End
         End_Procedure 
 
+        // REPARADO: Cambiada la "o" por el operador "or" correcto de DataFlex
         Procedure OnGetNavigateForwardData tWebNavigateData ByRef NavigateData Handle hoToView
             tWebNavigateData CurrentNavigateData
             Get GetNavigateData to CurrentNavigateData
-            If (CurrentNavigateData.eNavigateType = nfFromParent) Begin
+            
+            If (CurrentNavigateData.eNavigateType = nfFromParent or CurrentNavigateData.eNavigateType = nfFromMain or CurrentNavigateData.eNavigateType = 0) Begin
                 Move True to NavigateData.bReadOnly
             End
         End_Procedure
@@ -128,8 +125,7 @@ Object oSelectEquipo is a cWebView
             Procedure OnClick
                 Send Search of oList
             End_Procedure
-
-        End_Object 
+         End_Object 
 
         Object oNewButton is a cWebMenuItem
             Set psCSSClass to "WebClearMenuItem"
@@ -144,8 +140,7 @@ Object oSelectEquipo is a cWebView
             Procedure OnGetNavigateForwardData tWebNavigateData ByRef NavigateData Handle hoToView
                 Move True to NavigateData.bNewRecord
             End_Procedure
-
-        End_Object 
+        End_Object
     End_Object 
 
     Procedure OnNavigateForward tWebNavigateData NavigateData Integer hoInvokingView Integer hoInvokingObject
@@ -166,7 +161,6 @@ Object oSelectEquipo is a cWebView
             Case Else 
                 // Estándar
         Case End
-
     End_Procedure
 
 End_Object
